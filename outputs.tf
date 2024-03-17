@@ -1,10 +1,4 @@
-
-output "master_public_ips" {
-  description = "List of public IP addresses of master instances"
-  value       = module.ec2_master.public_ip
-}
-
-output "worker_public_ips" {
-  description = "List of public IP addresses of worker instances"
-  value       = module.ec2_worker.public_ip
+output "ssh_command" {
+  description = "SSH command to connect to the instance"
+  value       = "ssh -i develop_key.pem ubuntu@${module.ec2.public_ip} \n cat /home/ubuntu/.ssh/id_rsa.pub"
 }

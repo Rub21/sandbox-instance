@@ -1,43 +1,21 @@
-module "ec2_master" {
-  source = "terraform-aws-modules/ec2-instance/aws"
-  name   = "master-node"
-
-  instance_type          = "t2.medium"
-  key_name               = "k8s-gc"
-  monitoring             = true
-  vpc_security_group_ids = [aws_security_group.control_plane_sg.id]
-  subnet_id              = "subnet-03915205754a15ae4"
-  ami                    = "ami-05c969369880fa2c2"
-
-  user_data = file("${path.module}/user-data.sh")
-
-  tags = {
-    Terraform   = "true"
-    Environment = "dev"
-    Name        = "master-node"
-  }
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = "ec2_profile"
+  role = aws_iam_role.ec2_role.name
 }
-
-module "ec2_worker" {
-  source = "terraform-aws-modules/ec2-instance/aws"
-  name   = "workers-node"
-
-  create_spot_instance = true
-  spot_price           = "0.004"
-  spot_type            = "persistent"
-
-  instance_type          = "t2.micro"
-  key_name               = "k8s-gc"
+module "ec2" {
+  source                 = "terraform-aws-modules/ec2-instance/aws"
+  name                   = var.instance_name
+  instance_type          = var.instance_type
+  key_name               = "develop_key"
   monitoring             = true
-  vpc_security_group_ids = [aws_security_group.worker_nodes_sg.id]
+  vpc_security_group_ids = [aws_security_group.control-sg.id]
   subnet_id              = "subnet-03915205754a15ae4"
-  ami                    = "ami-05c969369880fa2c2"
-
-  user_data = file("${path.module}/user-data.sh")
-
+  ami                    = var.instance_ami
+  user_data              = file("${path.module}/user-data.sh")
+  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
   tags = {
     Terraform   = "true"
     Environment = "dev"
-    Name        = "worker-node"
+    Name        = var.instance_name
   }
 }
